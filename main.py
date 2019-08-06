@@ -22,23 +22,31 @@ class CameraExample(App):
 
         # Create a camera object
 
-        self.cameraObject            = Camera(play=False)
+        try:
 
-        self.cameraObject.play       = True
+            self.cameraObject            = Camera(play=False)
 
-        self.cameraObject.resolution = (300, 300) # Specify the resolution
+            self.cameraObject.play       = True
 
-       
+            self.cameraObject.resolution = (300, 300) # Specify the resolution
 
-        # Create a button for taking photograph
+            # Create a button for taking photograph
 
-        self.camaraClick = Button(text="Take Photo")
+            self.camaraClick = Button(text="Take Photo")
 
-        self.camaraClick.size_hint=(.5, .2)
+            self.camaraClick.size_hint=(.5, .2)
 
-        self.camaraClick.pos_hint={'x': .25, 'y':.75}
+            self.camaraClick.pos_hint={'x': .25, 'y':.75}
 
- 
+        except:
+
+            # Create a button for taking photograph
+
+            self.camaraClick = Button(text="Take Photo Error")
+
+            self.camaraClick.size_hint=(.5, .2)
+
+            self.camaraClick.pos_hint={'x': .25, 'y':.75}
 
         # bind the button's on_press to onCameraClick
 
