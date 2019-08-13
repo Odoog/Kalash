@@ -1,3 +1,7 @@
+![icon](https://img.icons8.com/material-sharp/24/000000/android-os.png)
+
+branch: ***Android***
+
 # Проект "auroRiffle"
 
 ## Стадии проекта:
