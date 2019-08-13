@@ -1,85 +1,53 @@
+__version__ = '1.0'
+
+import kivy
+
+# importing file from https://github.com/kivy/plyer/blob/master/plyer/platforms/android/camera.py
+# I downloaded it and saved it in the same directory:
+from camera import AndroidCamera
+
 from kivy.app import App
-
- 
-
-from kivy.uix.camera import Camera
-
-from kivy.uix.boxlayout import BoxLayout
-
 from kivy.uix.button import Button
+from kivy.uix.boxlayout import BoxLayout
+from kivy.properties import ObjectProperty, StringProperty
 
- 
+import base64
 
-class CameraExample(App):
+class MyCamera(AndroidCamera):
+    pass
 
- 
+class BoxLayoutW(BoxLayout):
+    my_camera = ObjectProperty(None)
+    # /sdcard means internal mobile storage for that case:
+    image_path = StringProperty('/sdcard/my_test_photo.png')
 
-    def build(self):
+    def __init__(self, **kwargs):
 
-        layout = BoxLayout(orientation='vertical')
+        super(BoxLayoutW, self).__init__()
 
-       
+        self.my_camera = MyCamera()
 
-        # Create a camera object
+    def take_shot(self):
+        self.my_camera._take_picture(self.on_success_shot, self.image_path)
 
-        try:
+    def on_success_shot(self, loaded_image_path):
+        # converting saved image to a base64 string:
+        image_str = self.image_convert_base64
+        return True
 
-            self.cameraObject            = Camera(play=False)
-
-            self.cameraObject.play       = True
-
-            self.cameraObject.resolution = (300, 300) # Specify the resolution
-
-            # Create a button for taking photograph
-
-            self.camaraClick = Button(text="Take Photo")
-
-            self.camaraClick.size_hint=(.5, .2)
-
-            self.camaraClick.pos_hint={'x': .25, 'y':.75}
-
-        except:
-
-            # Create a button for taking photograph
-
-            self.camaraClick = Button(text="Take Photo Error")
-
-            self.camaraClick.size_hint=(.5, .2)
-
-            self.camaraClick.pos_hint={'x': .25, 'y':.75}
-
-        # bind the button's on_press to onCameraClick
-
-        self.camaraClick.bind(on_press=self.onCameraClick)
-
-       
-
-        # add camera and button to the layout
-
-        layout.add_widget(self.cameraObject)
-
-        layout.add_widget(self.camaraClick)
-
-       
-
-        # return the root widget
-
-        return layout
-
- 
-
-    # Take the current frame of the video as the photo graph       
-
-    def onCameraClick(self, *args):
-
-        self.cameraObject.export_to_png('/kivyexamples/selfie.png')
-
-       
-
-       
-
-# Start the Camera App
+    #converting image to a base64, if you want to send it, for example, via POST:
+    def image_convert_base64(self):
+        with open(self.image_path, "rb") as image_file:
+            encoded_string = base64.b64encode(image_file.read())
+        if not encoded_string:
+            encoded_string = ''
+        return encoded_string
 
 if __name__ == '__main__':
 
-     CameraExample().run()       
+    class CameraApp(App):
+        def build(self):
+            main_window = BoxLayoutW()
+            return main_window
+
+    CameraApp().run()
