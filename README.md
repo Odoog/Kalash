@@ -1,6 +1,6 @@
-![icon](https://img.icons8.com/material-sharp/24/000000/android-os.png)
+![icon](https://img.icons8.com/material/24/000000/raspberry-pi.png)
 
-branch: ***Android***
+branch: ***Board***
 
 # Проект "auroRiffle"
 
