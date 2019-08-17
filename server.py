@@ -1,5 +1,5 @@
 import socket
-import cv2 
+import cv2
 import matplotlib.pyplot as plt
 import cvlib as cv
 import pickle
@@ -14,10 +14,13 @@ conn, addr = sock.accept()
 print('connected:', addr)
 
 while True:
-    data = conn.recv(1024)
+    data = conn.recv(102400)
 
     if not data:
         continue
+
+    else:
+        print("data --------------------")
 
     image = pickle.loads(data)
 

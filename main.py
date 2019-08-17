@@ -52,11 +52,10 @@ class ServerBellhopClass:
         self.sock = socket.socket()
         self.sock.connect((adress, port))
 
-    def send(image):
-
-        image = pickle.loads(data)
+    def send(self, image):
 
         message = pickle.dumps(image)
+
         self.sock.send(message)
 
         data = self.sock.recv(1024)
