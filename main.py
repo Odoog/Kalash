@@ -47,24 +47,30 @@ p2 = '2.jpg'
 
 class ServerBellhopClass:
 
-    def __init__(self, adress, port):
+    def connect(self, adress, port):
 
         self.sock = socket.socket()
         self.sock.connect((adress, port))
 
     def send(self, image):
 
+        self.connect('localhost', 9097)
+
         message = pickle.dumps(image)
+
+        print("len ------------------- ", len(message))
 
         self.sock.send(message)
 
-        data = self.sock.recv(1024)
+        data = self.sock.recv(1024000000)
 
         data = pickle.loads(data)
 
+        self.sock.close()
+
         return data[0], data[1], data[2] #bbox, label, conf
 
-ServerBellhop = ServerBellhopClass('localhost', 9090)
+ServerBellhop = ServerBellhopClass()
 
 
 def change_pic(pic, lout):
@@ -94,7 +100,7 @@ def change_pic(pic, lout):
 
         image_texture = Texture.create(
             size=(output_image.shape[1], output_image.shape[0]), colorfmt='rgb')
-        image_texture.blit_buffer(cv2.flip(output_image, 0).tostring(), colorfmt='rgb', bufferfmt='ubyte')
+        image_texture.blit_buffer(output_image.tostring(), colorfmt='rgb', bufferfmt='ubyte')
         pic.texture = image_texture
     Clock.schedule_once(lambda _: change_pic(pic, lout), 0)
 
