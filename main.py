@@ -1,18 +1,18 @@
 from kivy.config import Config
 Config.set('graphics', 'fullscreen', '0')
 
+import pickle
 import numpy as np
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
 from kivy.graphics.texture import Texture
-import cv2 
 import matplotlib.pyplot as plt
 %matplotlib inline
 import time
-import cvlib as cv
-from cvlib.object_detection import draw_bbox
+import socket
+import struct
 
 #constans
 
@@ -46,14 +46,45 @@ Builder.load_string('''
 p1 = '1.jpg'
 p2 = '2.jpg'
 
+class ServerBellhopClass:
+
+    def __init__(self, adress, port):
+
+        self.sock = socket.socket()
+        self.sock.connect((port, adress))
+
+        sock.close()
+
+        print(data)
+
+    def send(image):
+
+    image = pickle.loads(data)
+
+        message = pickle.dumps(image)
+        self.sock.send(message)
+
+        data = self.sock.recv(1024)
+
+        data = pickle.loads(data)
+
+        return data[0], data[1], data[2] #bbox, label, conf
+
+ServerBellhop = ServerBellhopClass('localhost', 9090)
+
+
 def change_pic(pic, lout):
     if lout.ids['camera'].texture != None:
         output_image = np.array(list(lout.ids['camera'].texture.pixels), dtype=np.uint8).reshape(480, 640, 4)[:,:,:3]
+
+        # <- output image
+
         global bbox, label, conf
         global iteration
         #img = cv2.GaussianBlur(img,(15,15),0)
         if iteration % DETECT_TIME == 0:
-            bbox, label, conf = cv.detect_common_objects(output_image, confidence=TRESH, model='yolov3-tiny')
+
+            bbox, label, conf = ServerBellhop.send(output_image)
             #log_of_detction
             #print(label, conf) 
         iteration+=1
@@ -64,6 +95,9 @@ def change_pic(pic, lout):
                 output_image[bbox[i][3] - DELTA : bbox[i][3] + DELTA , bbox[i][0] : bbox[i][2]] = np.array(COLOR, dtype=np.uint8)
                 output_image[bbox[i][1] : bbox[i][3] , bbox[i][0] - DELTA : bbox[i][0] + DELTA] = np.array(COLOR, dtype=np.uint8)
                 output_image[bbox[i][1] : bbox[i][3] , bbox[i][2] - DELTA : bbox[i][2] + DELTA] = np.array(COLOR, dtype=np.uint8)
+
+        # -> output image
+
         image_texture = Texture.create(
             size=(output_image.shape[1], output_image.shape[0]), colorfmt='rgb')
         image_texture.blit_buffer(cv2.flip(output_image, 0).tostring(), colorfmt='rgb', bufferfmt='ubyte')
