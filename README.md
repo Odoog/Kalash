@@ -1,6 +1,6 @@
 ![icon](https://img.icons8.com/material/24/000000/raspberry-pi.png)
 
-branch: ***Board***
+branch: ***Server***
 
 # Проект "auroRiffle"
 
