@@ -15,14 +15,15 @@ print('connected:', addr)
 
 while True:
     data = conn.recv(1024)
+
     if not data:
-        break
-        
+        continue
+
     image = pickle.loads(data)
 
     bbox, label, conf = cv.detect_common_objects(output_image, confidence=TRESH, model='yolov3-tiny')
 
-  	data = pickle.dumps((bbox, label, conf))
+    data = pickle.dumps((bbox, label, conf))
 
     conn.send(data)
 

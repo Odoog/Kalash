@@ -9,18 +9,17 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
 from kivy.graphics.texture import Texture
 import matplotlib.pyplot as plt
-%matplotlib inline
 import time
 import socket
 import struct
 
 #constans
 
-DELTA = 5      #Половина толщины рамки в пикселях
-TRESH = 0    #Трешхолд, степень уверенности, начиная с которой объекты выделяются, д.ед
-TARGET_OBJ = 'person' #целевой объект 
-COLOR = [255,0,0]     #цвет рамки, RGB
-DETECT_TIME = 13       #n, обновление рамки проиходит каждые n кадров 
+DELTA = 5
+TRESH = 0
+TARGET_OBJ = 'person'
+COLOR = [255,0,0]
+DETECT_TIME = 13
 
 #globals
 iteration = DETECT_TIME
@@ -51,15 +50,11 @@ class ServerBellhopClass:
     def __init__(self, adress, port):
 
         self.sock = socket.socket()
-        self.sock.connect((port, adress))
-
-        sock.close()
-
-        print(data)
+        self.sock.connect((adress, port))
 
     def send(image):
 
-    image = pickle.loads(data)
+        image = pickle.loads(data)
 
         message = pickle.dumps(image)
         self.sock.send(message)
