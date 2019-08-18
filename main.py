@@ -96,6 +96,7 @@ def change_pic(pic, lout):
                 output_image[bbox[i][1] : bbox[i][3] , bbox[i][0] - DELTA : bbox[i][0] + DELTA] = np.array(COLOR, dtype=np.uint8)
                 output_image[bbox[i][1] : bbox[i][3] , bbox[i][2] - DELTA : bbox[i][2] + DELTA] = np.array(COLOR, dtype=np.uint8)
 
+        output_image = np.flip(output_image, 0)
         # -> output image
 
         image_texture = Texture.create(
