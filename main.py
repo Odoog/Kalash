@@ -1,7 +1,7 @@
 from kivy.config import Config
 Config.set('graphics', 'fullscreen', '0')
 
-import pickle
+import _pickle as pickle
 import numpy as np
 from kivy.app import App
 from kivy.lang import Builder
@@ -14,6 +14,30 @@ import socket
 import struct
 
 #constans
+
+def send_msg(sock, msg):
+    # Prefix each message with a 4-byte length (network byte order)
+    msg = struct.pack('>I', len(msg)) + msg
+    sock.sendall(msg)
+
+def recv_msg(sock):
+    # Read message length and unpack it into an integer
+    raw_msglen = recvall(sock, 4)
+    if not raw_msglen:
+        return None
+    msglen = struct.unpack('>I', raw_msglen)[0]
+    # Read the message data
+    return recvall(sock, msglen)
+
+def recvall(sock, n):
+    # Helper function to recv n bytes or return None if EOF is hit
+    data = b''
+    while len(data) < n:
+        packet = sock.recv(n - len(data))
+        if not packet:
+            return None
+        data += packet
+    return data
 
 DELTA = 5
 TRESH = 0
@@ -47,22 +71,22 @@ p2 = '2.jpg'
 
 class ServerBellhopClass:
 
-    def connect(self, adress, port):
+    def connecty(self, adress, port):
 
-        self.sock = socket.socket()
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((adress, port))
 
     def send(self, image):
 
-        self.connect('localhost', 9097)
+        self.connecty('localhost', 9098)
 
         message = pickle.dumps(image)
 
         print("len ------------------- ", len(message))
 
-        self.sock.send(message)
+        send_msg(self.sock, message)
 
-        data = self.sock.recv(1024000000)
+        data = recv_msg(self.sock)
 
         data = pickle.loads(data)
 
