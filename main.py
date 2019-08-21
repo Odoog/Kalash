@@ -1,7 +1,8 @@
 from kivy.config import Config
 Config.set('graphics', 'fullscreen', '0')
 
-import _pickle as pickle
+import datetime
+import cPickle as pickle
 import numpy as np
 from kivy.app import App
 from kivy.lang import Builder
@@ -12,6 +13,7 @@ import matplotlib.pyplot as plt
 import time
 import socket
 import struct
+import json
 
 #constans
 
@@ -69,6 +71,13 @@ Builder.load_string('''
 p1 = '1.jpg'
 p2 = '2.jpg'
 
+def deb(message):
+    global debugF
+    if message != "n":
+       debugF.write(str(datetime.datetime.now().time()) + " : " + message + "\n")
+    else:
+       debugF.write("\n")
+
 class ServerBellhopClass:
 
     def connecty(self, adress, port):
@@ -78,9 +87,9 @@ class ServerBellhopClass:
 
     def send(self, image):
 
-        self.connecty('localhost', 9098)
+        self.connecty('192.168.1.52', 9098)
 
-        message = pickle.dumps(image)
+        message = json.dumps(image, encoding = "latin1")
 
         print("len ------------------- ", len(message))
 
@@ -88,45 +97,77 @@ class ServerBellhopClass:
 
         data = recv_msg(self.sock)
 
-        data = pickle.loads(data)
+        data = json.loads(data.decode("latin1"))
+
+        data[3] = np.asarray(data[3])
 
         self.sock.close()
 
-        return data[0], data[1], data[2] #bbox, label, conf
+        return data[0], data[1], data[2], data[3] #bbox, label, conf, image_array
 
 ServerBellhop = ServerBellhopClass()
 
 
+debugF = open("debug.txt", 'w')
+
 def change_pic(pic, lout):
+
+    global iteration
+
+    deb("Change_pic enter")
+
     if lout.ids['camera'].texture != None:
-        output_image = np.array(list(lout.ids['camera'].texture.pixels), dtype=np.uint8).reshape(480, 640, 4)[:,:,:3]
+
+        pixels = lout.ids['camera'].texture.pixels
+
+        pixelsList = list(pixels)
+
+        deb("Start convert pixels")
+
+        for num, item in enumerate(pixelsList):
+            pixelsList[num] = struct.unpack('>B', item)
+
+        deb("End convert pixels")
+
+        deb("Start creating output image")
+
+        output_image = np.array(pixelsList, dtype=np.uint8).reshape(480,640,4)[:,:,:3]
+
+        deb("End creating output image")
 
         # <- output image
 
         global bbox, label, conf
-        global iteration
         #img = cv2.GaussianBlur(img,(15,15),0)
-        if iteration % DETECT_TIME == 0:
+        #if iteration % DETECT_TIME == 0:
 
-            bbox, label, conf = ServerBellhop.send(output_image)
+        #    bbox, label, conf, output_image = ServerBellhop.send((lout.ids['camera'].texture.pixels, True))
             #log_of_detction
-            #print(label, conf) 
+            #print(label, conf)
+        #else:
+        #    
+        #     output_image = ServerBellhop.send((lout.ids['camera'].texture.pixels, False))
         iteration+=1
 #       output_image = draw_bbox(img, bbox, label, conf)
-        for i in range(len(conf)):
-            if label[i] == TARGET_OBJ and conf[i] >= TRESH:
-                output_image[bbox[i][1] - DELTA : bbox[i][1] + DELTA , bbox[i][0] : bbox[i][2]] = np.array(COLOR, dtype=np.uint8)
-                output_image[bbox[i][3] - DELTA : bbox[i][3] + DELTA , bbox[i][0] : bbox[i][2]] = np.array(COLOR, dtype=np.uint8)
-                output_image[bbox[i][1] : bbox[i][3] , bbox[i][0] - DELTA : bbox[i][0] + DELTA] = np.array(COLOR, dtype=np.uint8)
-                output_image[bbox[i][1] : bbox[i][3] , bbox[i][2] - DELTA : bbox[i][2] + DELTA] = np.array(COLOR, dtype=np.uint8)
+        #for i in range(len(conf)):
+        #    if label[i] == TARGET_OBJ and conf[i] >= TRESH:
+        #        output_image[bbox[i][1] - DELTA : bbox[i][1] + DELTA , bbox[i][0] : bbox[i][2]] = np.array(COLOR, dtype=np.uint8)
+        #        output_image[bbox[i][3] - DELTA : bbox[i][3] + DELTA , bbox[i][0] : bbox[i][2]] = np.array(COLOR, dtype=np.uint8)
+        #        output_image[bbox[i][1] : bbox[i][3] , bbox[i][0] - DELTA : bbox[i][0] + DELTA] = np.array(COLOR, dtype=np.uint8)
+        #        output_image[bbox[i][1] : bbox[i][3] , bbox[i][2] - DELTA : bbox[i][2] + DELTA] = np.array(COLOR, dtype=np.uint8)
 
-        output_image = np.flip(output_image, 0)
         # -> output image
+
+        deb("Start update texture")
 
         image_texture = Texture.create(
             size=(output_image.shape[1], output_image.shape[0]), colorfmt='rgb')
         image_texture.blit_buffer(output_image.tostring(), colorfmt='rgb', bufferfmt='ubyte')
         pic.texture = image_texture
+
+        deb("End update texture")
+        deb("n")
+
     Clock.schedule_once(lambda _: change_pic(pic, lout), 0)
 
     
